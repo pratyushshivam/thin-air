@@ -109,7 +109,7 @@ export interface Live {
 }
 
 const START_DAY = 6; // 18 April
-const ACCLIM_START = 0.5;
+const ACCLIM_START = 0.6;
 const ACCLIM_NIGHT: Partial<Record<PlaceId, number>> = { bc: 0.66, c1: 0.78, c2: 0.88, c3: 1, c4: 1 };
 const ENERGY_CAP: Partial<Record<PlaceId, number>> = { bc: 1, c1: 0.95, c2: 0.92, c3: 0.84, c4: 0.76 };
 
@@ -119,7 +119,7 @@ const TERRAIN_COST = { moraine: 1, icefall: 1.25, cwm: 0.9, face: 1.1, rock: 1.2
 export class Game {
   readonly season: Season;
   /** Absolute minutes since midnight on day 0 (12 April). */
-  time = START_DAY * 1440 + 20 * 60;
+  time = START_DAY * 1440 + 16.5 * 60;
   s = 0;
   scene: Scene;
   acclim = ACCLIM_START;
@@ -633,7 +633,7 @@ export class Game {
   }
 
   private c3Push(): Decision {
-    const sick = this.acclim < 0.8 && hash(this.seed, 81) < 0.65;
+    const sick = this.acclim < 0.84 && hash(this.seed, 81) < 0.65;
     if (sick) {
       this.note("hape");
       return {
