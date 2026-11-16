@@ -178,7 +178,7 @@ label, .hud small { font-size: 10px; letter-spacing: 0.18em; text-transform: upp
   .profile { display: none; }
   .ring { width: 112px; height: 112px; }
   .card { padding: 7vh 24px 4vh; width: 100vw; background: rgba(7, 9, 14, 0.84); justify-content: flex-start; }
-  .card.show ~ .hud, .hud:has(~ .card:not([hidden])) .kit, .hud:has(~ .card:not([hidden])) .o2, .hud:has(~ .card:not([hidden])) .top-right { display: none; }
+  .hud:has(~ .card:not([hidden])) .kit, .hud:has(~ .card:not([hidden])) .o2, .hud:has(~ .card:not([hidden])) .top-right { display: none; }
   .toast { top: 124px; left: 16px; right: 16px; width: auto; }
   .hint { white-space: normal; width: 80vw; }
   .title { padding: 6vh 26px; }
