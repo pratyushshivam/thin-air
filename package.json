@@ -1,0 +1,28 @@
+{
+  "name": "thin-air",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Climb Mount Everest on the real mountain, by the real route, in the real air. A third of the oxygen, and a clock.",
+  "homepage": "https://pratyushshivam.github.io/thin-air/",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --port 5290",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5291",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build:terrain": "node scripts/build-terrain.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/three": "^0.187.0",
+    "geotiff": "^3.0.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}
