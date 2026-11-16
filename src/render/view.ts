@@ -31,13 +31,15 @@ interface Shot {
   yaw: number;
   pitch: number;
 }
-const SHOTS: Record<TerrainKind, Shot> = {
-  moraine: { dist: 44, yaw: 24, pitch: 6 },
-  icefall: { dist: 46, yaw: -28, pitch: 9 },
-  cwm: { dist: 110, yaw: 30, pitch: 5 },
-  face: { dist: 90, yaw: 68, pitch: 3 },
-  rock: { dist: 66, yaw: -52, pitch: 7 },
-  ridge: { dist: 74, yaw: -76, pitch: 5 },
+// Each kind of ground has a few camera set-ups; the view glides from one to the next.
+// yaw 0 is behind the climber, 180 is in front looking back down the route.
+const SHOTS: Record<TerrainKind, Shot[]> = {
+  moraine: [{ dist: 44, yaw: 24, pitch: 6 }, { dist: 70, yaw: -40, pitch: 10 }],
+  icefall: [{ dist: 46, yaw: -28, pitch: 9 }, { dist: 60, yaw: 150, pitch: 16 }, { dist: 34, yaw: 60, pitch: 5 }],
+  cwm: [{ dist: 110, yaw: 30, pitch: 5 }, { dist: 170, yaw: -150, pitch: 9 }, { dist: 70, yaw: -50, pitch: 4 }],
+  face: [{ dist: 80, yaw: 150, pitch: 16 }, { dist: 90, yaw: 68, pitch: 3 }, { dist: 130, yaw: -160, pitch: 22 }],
+  rock: [{ dist: 66, yaw: -52, pitch: 7 }, { dist: 90, yaw: 160, pitch: 18 }],
+  ridge: [{ dist: 74, yaw: -76, pitch: 5 }, { dist: 96, yaw: 165, pitch: 14 }, { dist: 60, yaw: 80, pitch: 9 }],
 };
 
 export interface Weather {
@@ -354,7 +356,7 @@ export class View {
     this.scene.add(tentMesh);
 
     // other teams' headlamps on summit night
-    const lp: number[] = [];
+    const lp: number[] = [0, 0, 0, 0, 0, 0];
     const c4 = place("c4").s;
     for (let i = 0; i < 46; i++) {
       const s = c4 + ((i * 37) % 46) * ((ROUTE_LENGTH - c4) / 46) * 0.82 + 20;
@@ -364,14 +366,14 @@ export class View {
     const lg = new THREE.BufferGeometry();
     lg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(lp), 3));
     this.lampMat = new THREE.ShaderMaterial({
-      vertexShader: `uniform float uScale; uniform float uTime; varying float vA;
+      vertexShader: `uniform float uScale; uniform float uTime; uniform float uOthers; varying float vA;
         void main(){ vec4 mv = viewMatrix * vec4(position,1.0); gl_Position = projectionMatrix * mv;
-        vA = 0.75 + 0.25 * sin(uTime * 3.0 + position.x);
+        vA = (0.75 + 0.25 * sin(uTime * 3.0 + position.x)) * (gl_VertexID < 2 ? 1.0 : min(1.0, uOthers));
         gl_PointSize = uScale * clamp(900.0 / -mv.z, 2.0, 7.0); }`,
       fragmentShader: `precision highp float; varying float vA; uniform float uAmount;
         void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = exp(-d*d*4.0) * vA * uAmount;
         gl_FragColor = vec4(vec3(1.0,0.9,0.7) * a, 1.0); }`,
-      uniforms: { uScale: { value: 1 }, uTime: { value: 0 }, uAmount: { value: 0 } },
+      uniforms: { uScale: { value: 1 }, uTime: { value: 0 }, uAmount: { value: 0 }, uOthers: { value: 0 } },
       blending: THREE.AdditiveBlending,
       transparent: true,
       depthWrite: false,
@@ -512,9 +514,9 @@ export class View {
     const am = 1 / (Math.sin(e * RAD) + 0.50572 * Math.pow(e + 6.07995, -1.6364));
     const path = Math.min(am, 38) * (0.35 + 0.65 * density);
     const up = THREE.MathUtils.smoothstep(sun.elevation, -dip - 0.9, -dip + 1.2);
-    const I = 1.15 * up;
+    const I = 0.8 * up;
     const warm = 1 + 0.5 * (1 - THREE.MathUtils.smoothstep(sun.elevation, 0, 14));
-    this.u.uSunColor.value.set(I * warm * Math.exp(-0.036 * path), I * warm * Math.exp(-0.074 * path), I * warm * Math.exp(-0.108 * path));
+    this.u.uSunColor.value.set(I * warm * Math.exp(-0.04 * path), I * warm * Math.exp(-0.09 * path), I * warm * Math.exp(-0.14 * path));
 
     this.u.uSkySun.value.copy(this.u.uSunColor.value).lerp(new V(I, I, I), 0.6);
     // twilight: strongest with the sun just under the horizon, gone by -14 degrees
@@ -529,9 +531,9 @@ export class View {
     this.u.uAmbient.value
       .set(0.2 * sc.x + 0.02 * sc.z, 0.3 * sc.y + 0.03 * sc.z, 0.62 * sc.z)
       .multiplyScalar(0.62 * (0.45 + 0.55 * density))
-      .add(new V(0.02, 0.03, 0.055).multiplyScalar(night))
+      .add(new V(0.03, 0.045, 0.085).multiplyScalar(night))
       .add(new V(0.03, 0.045, 0.085).multiplyScalar(dusk));
-    this.exposure = 1 + 0.5 * dusk * (1 - night) + 0.8 * night + 0.7 * (1 - THREE.MathUtils.smoothstep(sun.elevation, 0, 10)) * up;
+    this.exposure = 1 + 0.5 * dusk * (1 - night) + 0.8 * night + 0.35 * (1 - THREE.MathUtils.smoothstep(sun.elevation, 0, 10)) * up;
     this.starMat.uniforms.uFade!.value = night * 0.06;
 
     // turn the star catalogue to this place and hour
@@ -645,7 +647,8 @@ export class View {
       want.set(m.x, m.y, m.z);
       look.set(m.x + Math.sin(a) * 1000, m.y + 1000 * Math.tan((2 - this.pitchOffset * 0.5) * RAD), m.z - Math.cos(a) * 1000);
     } else {
-      const shot = SHOTS[kind];
+      const set = SHOTS[kind];
+      const shot = set[Math.floor(t / 22) % set.length]!;
       const wide = flying ? 3.4 : 1;
       const a = this.routePoint(Math.min(ROUTE_LENGTH, s + 25));
       const b = this.routePoint(Math.max(0, s - 25));
@@ -673,7 +676,7 @@ export class View {
       if (!blocked) break;
       want.y += 6 + pass * 6;
     }
-    const lerp = this.first ? 1 : 1 - Math.exp(-dt * (flying ? 2.2 : 1.6));
+    const lerp = this.first ? 1 : 1 - Math.exp(-dt * (flying ? 2.2 : 0.9));
     this.camPos.lerp(want, lerp);
     this.camTarget.lerp(look, this.first ? 1 : 1 - Math.exp(-dt * 3));
     this.first = false;
@@ -720,10 +723,16 @@ export class View {
     // headlamps
     const dark = 1 - THREE.MathUtils.smoothstep(this.sunElevation, -8, 2);
     this.lampMat.uniforms.uTime!.value = t;
-    this.lampMat.uniforms.uAmount!.value = dark * this.nightLamps * 0.04;
+    this.lampMat.uniforms.uAmount!.value = dark * 0.9;
+    this.lampMat.uniforms.uOthers!.value = this.nightLamps;
     const lampOn = dark > 0.05 && !flying;
     const fwd = this.routePoint(Math.min(ROUTE_LENGTH, Math.max(0, s + 6 * this.dir)));
-    for (const m of this.terrainMats) m.uniforms.uLamp!.value.set(fwd.x, fwd.y + 2.2, fwd.z, lampOn ? 0.3 * dark : 0);
+    for (const m of this.terrainMats) m.uniforms.uLamp!.value.set(fwd.x, fwd.y + 2.2, fwd.z, lampOn ? 0.9 * dark : 0);
+    // your own two lamps are the first two points
+    const la = this.lamps.geometry.attributes.position as THREE.BufferAttribute;
+    la.setXYZ(0, cp.x, cp.y + 1.75, cp.z);
+    la.setXYZ(1, this.partner.position.x, this.partner.position.y + 1.75, this.partner.position.z);
+    la.needsUpdate = true;
     const tentGlow = dark * 0.05;
     (this.tentMat.uniforms.uEmissive!.value as THREE.Color).setRGB(tentGlow, tentGlow * 0.62, tentGlow * 0.18);
     (this.routeLine.material as THREE.LineBasicMaterial).color.setScalar(0.12 + sc.length() * 0.5);

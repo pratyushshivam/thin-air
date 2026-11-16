@@ -15,9 +15,9 @@ vec3 skyColor(vec3 d) {
   float am = 1.0 / (h + 0.085);
   vec3 ext = exp(-BETA * 8.0 * uDensity * am);
   float pr = 0.75 * (1.0 + mu * mu);
-  vec3 col = uSkySun * (1.0 - ext) * pr * 1.75;
+  vec3 col = uSkySun * (1.0 - ext) * pr * 1.25;
   float m = max(mu, 0.0);
-  col += uSunColor * (1.0 - ext.r) * (pow(m, 6.0) * 0.9 + pow(m, 90.0) * 6.0);
+  col += uSunColor * (1.0 - ext.r) * (pow(m, 8.0) * 0.3 + pow(m, 120.0) * 2.0);
   float low = pow(clamp(1.0 - h * 2.6, 0.0, 1.0), 3.0);
   vec2 dh = normalize(d.xz + 1e-5);
   vec2 sh = normalize(uSun.xz + 1e-5);
@@ -125,11 +125,11 @@ void main() {
   vec3 albedo = mix(snowCol, rockCol, rock);
 
   vec2 g = (mid.gb - 0.5) * midK * 0.9 + (fine.gb - 0.5) * nearK * 1.1;
-  vec3 nd = n + vec3(g.x, 0.0, g.y) * mix(0.42, 1.25, rock);
+  vec3 nd = n + vec3(g.x, 0.0, g.y) * mix(0.42, 0.85, rock);
   // flutings: ribs of snow running down steep faces
   vec2 across = normalize(vec2(-n.z, n.x) + 1e-5);
   float rib = sin(dot(p, across) * 0.3 + big.a * 14.0 + mid.r * 2.0);
-  nd += vec3(across.x, 0.0, across.y) * rib * 0.3 * smoothstep(0.2, 0.42, slope) * (1.0 - rock) * midK * (1.0 - patchK);
+  nd += vec3(across.x, 0.0, across.y) * rib * 0.3 * smoothstep(0.2, 0.42, slope) * (1.0 - rock) * (1.0 - smoothstep(1800.0, 4500.0, dist)) * (1.0 - patchK);
   nd = normalize(nd);
 
   float ndl = dot(nd, uSun);
@@ -137,9 +137,12 @@ void main() {
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 light = uSunColor * diff * shadow;
   vec3 amb = uAmbient * (0.38 + 0.62 * nd.y) * mix(0.42, 1.0, open) * (1.0 + ice * 1.4);
+  // the bright half of the sky is the half the sun is in: it gives shadowed snow its shape
+  amb += uAmbient * 0.75 * max(dot(nd, normalize(vec3(uSun.x, 0.25, uSun.z))), 0.0) * mix(0.5, 1.0, open);
   // light thrown back up by sunlit snow
   amb += uSunColor * 0.07 * (1.0 - nd.y * 0.5) * mix(0.3, 1.0, shadow);
   vec3 col = albedo * (light + amb);
+  col += ice * uAmbient * vec3(0.35, 0.65, 0.95) * 1.1;
   float spec = pow(max(dot(reflect(-uSun, nd), view), 0.0), 48.0);
   col += uSunColor * spec * shadow * (1.0 - rock) * (0.16 + ice * 0.5);
 
@@ -337,7 +340,7 @@ void main() {
   if (depth >= 0.99999) {
     col += skyColor(dir);
     float mu = dot(dir, uSun);
-    col += uSunColor * smoothstep(0.99994, 0.99998, mu) * 25.0 * step(-0.06, dir.y);
+    col += uSunColor * uSunColor * smoothstep(0.99994, 0.99998, mu) * 14.0 * step(-0.06, dir.y);
   }
 
   // the cloud sea

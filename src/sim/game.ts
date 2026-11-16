@@ -114,7 +114,7 @@ const ACCLIM_NIGHT: Partial<Record<PlaceId, number>> = { bc: 0.66, c1: 0.78, c2:
 const ENERGY_CAP: Partial<Record<PlaceId, number>> = { bc: 1, c1: 0.95, c2: 0.92, c3: 0.84, c4: 0.76 };
 
 const SPEED_C = 0.62;
-const TERRAIN_COST = { moraine: 1, icefall: 1.25, cwm: 0.9, face: 1.1, rock: 1.2, ridge: 1.65 } as const;
+const TERRAIN_COST = { moraine: 1, icefall: 1.25, cwm: 0.9, face: 1.1, rock: 1.2, ridge: 1.5 } as const;
 
 export class Game {
   readonly season: Season;
@@ -248,6 +248,11 @@ export class Game {
     };
   }
 
+  /** Re-read the instruments where you stand (after a night, or days, have passed). */
+  refresh(): void {
+    this.live = this.measure(false, 0);
+  }
+
   /** Change the regulator. */
   setFlow(flow: number): void {
     this.flow = this.bottles.length ? Math.max(0, Math.min(4, Math.round(flow))) : 0;
@@ -322,7 +327,7 @@ export class Game {
       const grade = gradeAt(this.s) * c.dir;
       const perMetre =
         c.dir > 0
-          ? (SPEED_C * (0.012 + 0.1 * Math.max(0, grade) + 0.02 * Math.max(0, -grade)) * TERRAIN_COST[terrain]) /
+          ? (SPEED_C * (0.012 + 0.1 * Math.max(0, grade) + 0.02 * Math.max(0, -grade)) * TERRAIN_COST[terrain] * (live.alt > 7950 ? 1.45 : 1)) /
             Math.max(0.05, live.capacity)
           : (SPEED_C * (0.02 + 0.035 * Math.abs(grade)) * TERRAIN_COST[terrain]) / (0.3 + 0.7 * live.capacity);
       const crawl = this.energy <= 0 ? 0.3 : 1;
@@ -404,7 +409,7 @@ export class Game {
 
     // energy
     const high = live.alt >= DEATH_ZONE_M;
-    const drain = (moving ? (dir > 0 ? 1 / 960 : 1 / 1600) : 1 / 3600) * (high ? 1.3 : 1) * (live.heat ? 1.6 : 1);
+    const drain = (moving ? (dir > 0 ? 1 / 1150 : 1 / 1700) : 1 / 3600) * (high ? 1.3 : 1) * (live.heat ? 1.6 : 1);
     this.energy = Math.max(0, this.energy - drain * dtm);
     if (high) this.stats.deathZoneMin += dtm;
 

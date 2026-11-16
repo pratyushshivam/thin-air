@@ -79,14 +79,14 @@ export function detail(kind: TerrainKind, x: number, z: number): number {
       return (fbm(x / 22, z / 22, 3) - 0.5) * 2.4 - crack * 10 * (fbm(x / 200, z / 200, 2) > 0.5 ? 1 : 0);
     }
     case "face":
-      return (fbm(x / 30, z / 30, 4) - 0.5) * 9 + (fbm(x / 6, z / 6, 2) - 0.5) * 1.5;
+      return (fbm(x / 30, z / 30, 4) - 0.5) * 5 + (fbm(x / 6, z / 6, 2) - 0.5) * 1;
     case "rock": {
       const r = 1 - Math.abs(2 * fbm(x / 16, z / 16, 4) - 1);
-      return r * r * 7 - 3 + (vnoise(x / 2.5, z / 2.5) - 0.5) * 0.8;
+      return r * r * 3 - 1.2 + (vnoise(x / 2.5, z / 2.5) - 0.5) * 0.5;
     }
     case "ridge": {
       const r = 1 - Math.abs(2 * fbm(x / 12, z / 12, 4) - 1);
-      return r * r * 5 - 2 + (vnoise(x / 2.2, z / 2.2) - 0.5) * 0.7;
+      return r * r * 2.4 - 1 + (vnoise(x / 2.2, z / 2.2) - 0.5) * 0.4;
     }
     default:
       return (fbm(x / 7, z / 7, 3) - 0.5) * 3 + (vnoise(x / 1.8, z / 1.8) - 0.5) * 0.8;

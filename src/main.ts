@@ -87,6 +87,7 @@ function present(scene: Scene): void {
   view.s = game.s;
   switch (scene.kind) {
     case "decision":
+      game.refresh();
       hud.showHud(true, false);
       hud.decision(scene.decision, game);
       if (!interrupt) {
@@ -233,7 +234,7 @@ function frame(dt: number, draw = true): void {
     // the title: first light on the summit pyramid
     // dawn arrives while you read
     titleClock += dt;
-    hour = 5.5 + Math.min(0.75, titleClock / 110);
+    hour = 5.0 + Math.min(0.55, titleClock / 150);
     doy = 143;
   }
 
@@ -387,6 +388,21 @@ async function boot(): Promise<void> {
       },
       choose(id: string) {
         game.choose(id);
+      },
+      /** Simulation only, no picture: play `seconds` of climbing as the test bot would. */
+      fast(seconds: number) {
+        let h = true;
+        for (let i = 0; i < seconds * 30 && (game.scene.kind === "climb" || game.scene.kind === "summit"); i++) {
+          if (h && game.debt > 0.82) h = false;
+          else if (!h && game.debt < 0.2) h = true;
+          game.step({ climb: h && game.live.gust === 0 });
+        }
+        game.events.length = 0;
+        lapses.length = 0;
+        lapse = null;
+        hud.caption(null);
+        shown = null;
+        return `${game.scene.kind} alt=${game.alt.toFixed(0)} ${game.hour.toFixed(1)}h`;
       },
       async shot(name: string, frames = 20) {
         for (let i = 0; i < frames; i++) frame(1 / 60);
