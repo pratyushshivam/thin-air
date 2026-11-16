@@ -188,3 +188,6 @@ label, .hud small { font-size: 10px; letter-spacing: 0.18em; text-transform: upp
   .rows, .bars { display: none; }
   .banner { top: 9vh; }
 }
+
+/* a decision card covers the left instruments at any width */
+.hud:has(~ .card:not([hidden])) .kit { display: none; }
