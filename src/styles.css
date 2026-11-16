@@ -159,18 +159,30 @@ label, .hud small { font-size: 10px; letter-spacing: 0.18em; text-transform: upp
 .sheet .opts.row button { flex: 1 1 220px; }
 
 @media (max-width: 720px) {
-  .kit { width: 54vw; bottom: 150px; }
-  .rows .row { grid-template-columns: 1fr; }
-  .row i { grid-column: 1; }
-  .o2 { right: 16px; bottom: 150px; width: 38vw; }
-  .flows button { width: 26px; height: 30px; font-size: 12px; }
+  .where { left: 16px; top: 16px; }
+  .top-right { top: 84px; left: 16px; right: auto; justify-content: flex-start; gap: 6px; }
+  .chip { padding: 7px 10px; font-size: 10px; letter-spacing: 0.12em; }
+  .kit { left: 16px; bottom: 164px; width: 43vw; }
+  .alt { font-size: 40px; }
+  .rows { margin-top: 10px; }
+  .row { grid-template-columns: 1fr; padding: 5px 0; }
+  .row b { font-size: 14px; }
+  .row i { display: none; }
+  .row i.warn { display: block; grid-column: 1; }
+  .bars { gap: 8px; margin-top: 8px; }
+  .o2 { right: 14px; bottom: 164px; width: 45vw; }
+  .o2 label i { display: block; margin: 3px 0 0; }
+  .flows { gap: 4px; }
+  .flows button { width: 27px; height: 30px; font-size: 12px; }
   .flows small { display: none; }
   .profile { display: none; }
-  .card { padding: 7vh 24px 4vh; width: 100vw; background: rgba(7, 9, 14, 0.82); }
-  .toast { top: 62px; left: 16px; right: 16px; width: auto; }
-  .top-right { top: 54px; right: 16px; left: 16px; justify-content: flex-end; }
+  .ring { width: 112px; height: 112px; }
+  .card { padding: 7vh 24px 4vh; width: 100vw; background: rgba(7, 9, 14, 0.84); justify-content: flex-start; }
+  .card.show ~ .hud, .hud:has(~ .card:not([hidden])) .kit, .hud:has(~ .card:not([hidden])) .o2, .hud:has(~ .card:not([hidden])) .top-right { display: none; }
+  .toast { top: 124px; left: 16px; right: 16px; width: auto; }
   .hint { white-space: normal; width: 80vw; }
   .title { padding: 6vh 26px; }
+  .banner { top: 24vh; }
 }
 @media (max-height: 520px) {
   .rows, .bars { display: none; }

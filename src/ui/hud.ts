@@ -290,7 +290,7 @@ export class Hud {
     };
     const [h, p] = head[ending];
     const rows: [string, string][] = [
-      ["Highest point", `${fmt(st.maxAlt, st.maxAlt > 8848 ? 2 : 0)} m`],
+      ["Highest point", `${fmt(st.maxAlt, st.maxAlt > 8848.8 ? 2 : 0)} m`],
       ["Lowest blood oxygen", `${Math.round(st.minSpo2 * 100)}%`],
       ["Coldest wind chill", temp(st.minWindChill)],
       ["Strongest wind", `${fmt(st.maxWind)} km/h`],

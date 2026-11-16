@@ -1,7 +1,7 @@
 // The expedition: one deterministic state machine. Nothing in here touches the
 // screen, the clock on the wall or Math.random; the same seed and the same
 // inputs give the same climb, which is what tests/game.test.ts leans on.
-import { DEATH_ZONE_M, frostbiteMinutes, pressureMmHg, windChillC } from "./air";
+import { DEATH_ZONE_M, SUMMIT_M, frostbiteMinutes, pressureMmHg, windChillC } from "./air";
 import { blood, breathedFiO2, ventilationBTPS, vo2maxFraction } from "./body";
 import { PLACES, ROUTE_LENGTH, altitudeAt, gradeAt, place, terrainAt, type PlaceId } from "./route";
 import { MONSOON_DAY, Season, dateLabel, hash } from "./weather";
@@ -418,7 +418,7 @@ export class Game {
     else if (this.spo2 > 0.6) this.hyp = Math.max(0, this.hyp - dtm / 120);
 
     const st = this.stats;
-    st.maxAlt = Math.max(st.maxAlt, live.alt);
+    st.maxAlt = Math.min(SUMMIT_M, Math.max(st.maxAlt, live.alt));
     st.minSpo2 = Math.min(st.minSpo2, this.spo2);
     st.minWindChill = Math.min(st.minWindChill, live.windChill);
     st.maxWind = Math.max(st.maxWind, live.wind);
